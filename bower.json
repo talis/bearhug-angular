@@ -1,0 +1,19 @@
+{
+    "name": "bearhug-angular",
+    "version": "1.0.0",
+    "main": "./src/bearhug.js",
+    "description": "Response interceptor for elegant bearer-token handling for angular's $http service",
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/talis/bearhug-angular.git"
+    },
+    "dependencies": {
+        "angular": "*",
+        "app-logger-angular": "1.0.0"
+    },
+    "ignore": [
+        "node_modules",
+        "components",
+        "lib"
+    ]
+}
