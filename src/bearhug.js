@@ -2,31 +2,24 @@
 
 /* Response interceptors */
 angular.module('talis.bearhug', []).config(['$httpProvider',function($httpProvider) {
-    delete $httpProvider.defaults.headers.common['X-Requested-With'];
-
     // intercept for oauth tokens
     $httpProvider.responseInterceptors.push([
-        '$rootScope', '$q', '$injector','$location','PERSONA_ENDPOINT','applicationLoggingService',
-        function ($rootScope, $q, $injector, $location, PERSONA_ENDPOINT, applicationLoggingService) {
+        '$rootScope', '$q', '$injector','$location','BEARHUG_USER_LOGIN_ENDPOINT','BEARHUG_FAILED_REFRESH_ROUTE','applicationLoggingService',
+        function ($rootScope, $q, $injector, $location, BEARHUG_USER_LOGIN_ENDPOINT, BEARHUG_FAILED_REFRESH_ROUTE, applicationLoggingService) {
             return function(promise) {
                 return promise.then(function(response) {
                     return response; // no action, was successful
                 }, function (response) {
                     // error - was it 401 or something else?
-                    if (response.status===401 && response.data.error && response.data.error === "invalid_token" && !$rootScope.oauthTokenRetryFail) {
+                    if (response.status===401 && response.data.error && response.data.error === "invalid_token" && !$rootScope.bearhugRetryFail) {
                         applicationLoggingService.debug('responseInterceptor - 401 - expired token?');
                         var deferred = $q.defer();                         // 401 with invalid token - defer until we can re-request
                         // Let's get login.json again... (cannot inject $http directly as will cause a circular ref)
                         var getUserData = function() {
-                            if ($rootScope.user && $rootScope.user.refreshUrl) {
-                                return $injector.get("$http").get($rootScope.user.refreshUrl);
+                            if (USER_ENDPOINT.indexOf("?")===-1) {
+                                return $injector.get("$http").jsonp(BEARHUG_USER_LOGIN_ENDPOINT+'?cb=JSON_CALLBACK');
                             } else {
-                                if ($rootScope.inst != null && $rootScope.inst.shortCode != null) {
-                                    // go to inst-specific login.json, doesn't matter if persona session exists or not this will re-set the inst and sign you back in if SimpleSAML session is still active
-                                    return $injector.get("$http").jsonp(PERSONA_ENDPOINT+'/2/auth/providers/'+$rootScope.inst.shortCode+'/login.json?cb=JSON_CALLBACK');
-                                } else {
-                                    return $injector.get("$http").jsonp(PERSONA_ENDPOINT+'/2/auth/login.json?cb=JSON_CALLBACK');
-                                }
+                                return $injector.get("$http").jsonp(BEARHUG_USER_LOGIN_ENDPOINT+'&cb=JSON_CALLBACK');
                             }
                         };
                         getUserData().then(function(loginResponse) {
@@ -39,17 +32,17 @@ angular.module('talis.bearhug', []).config(['$httpProvider',function($httpProvid
                                     applicationLoggingService.debug('Managed to get new token');
                                     deferred.resolve(response);
                                 },function(response) {
-                                    $rootScope.oauthTokenRetryFail = true;
+                                    $rootScope.bearhugRetryFail = true;
                                     deferred.reject(); // something went wrong
                                 });
                             } else {
-                                $rootScope.oauthTokenRetryFail = true;
+                                $rootScope.bearhugRetryFail = true;
                                 deferred.reject(); // login.json didn't give us data
                             }
                         }, function(response) {
-                            $rootScope.oauthTokenRetryFail = true;
-                            deferred.reject(); // login.json failed, redirect to splash so user can login again
-                            $location.path('/splash');
+                            $rootScope.bearhugRetryFail = true;
+                            deferred.reject(); // login failed, redirect to default location
+                            $location.path(BEARHUG_FAILED_REFRESH_ROUTE);
                             return;
                         });
                         return deferred.promise; // return the deferred promise

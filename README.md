@@ -9,7 +9,7 @@ Basic usage
 Include the library:
 
 ````html
-<script src="/my/bower/dir/bearhug-angular/src/bearhug.js">
+<script src="/my/bower/dir/bearhug-angular/src/bearhug.js"></script>
 ````
 
 In your main app.js:
@@ -17,7 +17,11 @@ In your main app.js:
 ````javascript
     angular.module('my-app', [
         'talis.bearhug']) // declare bearhug as a dependancy
+        .constant('BEARHUG_USER_LOGIN_ENDPOINT','/get/me/a/new/token.json') // where can bearhug get a new bearer token?
+        .constant('BEARHUG_FAILED_REFRESH_ROUTE','/'); // angular path to redirect to if unsuccessful
 ````
+
+That's it. All usage of $http will append
 
 Exclusions
 ----
