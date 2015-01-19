@@ -19,9 +19,12 @@ In your main app.js:
         'talis.bearhug']) // declare bearhug as a dependancy
         .constant('BEARHUG_USER_LOGIN_ENDPOINT','/get/me/a/new/token.json') // where can bearhug get a new bearer token?
         .constant('BEARHUG_FAILED_REFRESH_ROUTE','/'); // angular path to redirect to if unsuccessful
+
+    app.value('loggedInUser',{}); // declare empty logged in user
+    app.value('oauthCredentials',{});
 ````
 
-`$rootScope.user` will contain the data returned from `BEARHUG_USER_LOGIN_ENDPOINT`. This endpoint should also return an oauth token via the `oauth` property in its JSON response. This will be set to `$rootScope.oauth`.
+The angular value `loggedInUser` will be available to be injected into wherever in your app you need access to the current logged in user. It will contain the data returned from `BEARHUG_USER_LOGIN_ENDPOINT`. This endpoint should also return an oauth token via the `oauth` property in its JSON response, this will be assigned to `oauthCredentials`, which again can be injected where needed.
 
 That's it. All usage of $http will append
 
@@ -46,5 +49,6 @@ See the blog post http://engineering.talis.com/articles/elegant-api-auth-angular
 TODO
 -----
 
-* Make `user` an injectable rather than rely on your app having it on $rootScope. Have this implement an 'interface' rather than rely on direct access to properties
-* Work out why it is necessary to set `$rootScope.oauth` as well as `$rootScope.user.oauth` (Note to non-talis github users - this library was extracted from one of our apps where this was a dependency)
+* Work out why it is necessary to set `oauth` as well as `loggedInUser` (which will also contain oauth data). Note to non-talis github users - this library was extracted from one of our apps where this was a dependency
+* Move `bearhugRetryFail` out of `$rootScope`.
+* Move `error` out of `$rootScope`.

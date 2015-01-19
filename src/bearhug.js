@@ -4,8 +4,8 @@
 angular.module('talis.bearhug', []).config(['$httpProvider',function($httpProvider) {
     // intercept for oauth tokens
     $httpProvider.responseInterceptors.push([
-        '$rootScope', '$q', '$injector','$location','BEARHUG_USER_LOGIN_ENDPOINT','BEARHUG_FAILED_REFRESH_ROUTE','applicationLoggingService',
-        function ($rootScope, $q, $injector, $location, BEARHUG_USER_LOGIN_ENDPOINT, BEARHUG_FAILED_REFRESH_ROUTE, applicationLoggingService) {
+        '$rootScope', '$q', '$injector','$location','loggedInUser','oauthCredentials','BEARHUG_USER_LOGIN_ENDPOINT','BEARHUG_FAILED_REFRESH_ROUTE','applicationLoggingService',
+        function ($rootScope, $q, $injector, $location, loggedInUser, oauthCredentials, BEARHUG_USER_LOGIN_ENDPOINT, BEARHUG_FAILED_REFRESH_ROUTE, applicationLoggingService) {
             return function(promise) {
                 return promise.then(function(response) {
                     return response; // no action, was successful
@@ -24,8 +24,8 @@ angular.module('talis.bearhug', []).config(['$httpProvider',function($httpProvid
                         };
                         getUserData().then(function(loginResponse) {
                             if (loginResponse.data) {
-                                $rootScope.user = loginResponse.data;
-                                $rootScope.oauth = loginResponse.data.oauth;                                 // we have some data - set new user at $rootScope
+                                loggedInUser = loginResponse.data;
+                                oauthCredentials = loginResponse.data.oauth;
                                 // now let's retry the original request - transformRequest in .run() below will add the new OAuth token
                                 $injector.get("$http")(response.config).then(function(response) {
                                     // we have a successful response - resolve it using deferred
@@ -96,8 +96,8 @@ angular.module('talis.bearhug', []).config(['$httpProvider',function($httpProvid
      * above deals with that specifically
      */
     $httpProvider.responseInterceptors.push([
-        '$rootScope', '$q','applicationLoggingService',
-        function($rootScope, $q,applicationLoggingService){
+        '$q','applicationLoggingService',
+        function($q,applicationLoggingService){
             return function(promise){
                 return promise.then(function(response){
                     // http on success
@@ -119,10 +119,10 @@ angular.module('talis.bearhug', []).config(['$httpProvider',function($httpProvid
         }
     ]);
 
-}]).run(['$rootScope', '$injector', function($rootScope,$injector) {
+}]).run(['oauthCredentials', '$injector', function(oauthCredentials,$injector) {
     $injector.get("$http").defaults.transformRequest = function(data, headersGetter) {
-        if ($rootScope.oauth) {
-            headersGetter()['Authorization'] = "Bearer "+$rootScope.oauth.access_token;
+        if (oauthCredentials) {
+            headersGetter()['Authorization'] = "Bearer "+oauthCredentials.access_token;
             headersGetter()['Cache-Control'] = 'no-cache';
             headersGetter()['Pragma'] = 'no-cache';
         }
