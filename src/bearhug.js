@@ -16,7 +16,7 @@ angular.module('talis.bearhug', []).config(['$httpProvider',function($httpProvid
                         var deferred = $q.defer();                         // 401 with invalid token - defer until we can re-request
                         // Let's get login.json again... (cannot inject $http directly as will cause a circular ref)
                         var getUserData = function() {
-                            if (USER_ENDPOINT.indexOf("?")===-1) {
+                            if (BEARHUG_USER_LOGIN_ENDPOINT.indexOf("?")===-1) {
                                 return $injector.get("$http").jsonp(BEARHUG_USER_LOGIN_ENDPOINT+'?cb=JSON_CALLBACK');
                             } else {
                                 return $injector.get("$http").jsonp(BEARHUG_USER_LOGIN_ENDPOINT+'&cb=JSON_CALLBACK');
