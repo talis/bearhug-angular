@@ -6,11 +6,11 @@ angular.module('talis.bearhug', [])
     this._onError = null;
     this._onLog = null;
 
-    this.$get = [function() {
-        var user = null;
+    this.$get = ["$injector", function($injector) {
         var getEndpoint = this._getEndpoint;
         var onError = this._onError;
         var onLog = this._onLog;
+        var user = null;
 
         return {
             /**
@@ -39,43 +39,63 @@ angular.module('talis.bearhug', [])
              * @param onError: function (err)
              */
             authenticate: function(onSuccess, onError) {
-                getEndpoint(this.getUser(), this.getOAuthToken()).then(
+                var promise = $injector.invoke(getEndpoint, this);
+
+                promise.then(
                     function (resp) {
                         if (resp && resp.status === 200 && resp.data) {
                             user = _.merge(user || {}, resp.data);
-                            return onSuccess(null, user);
+                            $injector.invoke(onSuccess, this, {
+                                err: null
+                            });
+
+                            return;
                         }
 
                         user = null;
                         if (resp && resp.status !== 200) {
-                            onSuccess("Authentication status: " + resp.status, null);
+                            $injector.invoke(onSuccess, this, {
+                                err: "Authentication status: " + resp.status
+                            });
                         } else {
-                            onSuccess("Authentication error: " + JSON.stringify(resp), null);
+                            $injector.invoke(onSuccess, this, {
+                                err: "Authentication error: " + resp.status
+                            });
                         }
                     },
                     function () {
                         user = null;
                         onError(null); // TODO: this could mask errors
-                        this.onError(null); //TODO: does this work?
+                        $injector.invoke(this.onError, this);
                     }
                 );
             },
 
-            log: onLog,
-            error: onError,
+            log: function (info) {
+                $injector.invoke(onLog, this, {
+                    info: info
+                });
+            },
+
+            error: function (err) {
+                $injector.invoke(onError, this, {
+                    err: err
+                });
+            }
         };
     }];
 
-    // getEndPoint(user, oauthToken) -> url
+    // [getEndPoint()] -> url
     this.setCreateEndpointFunc = function (getEndpointFunc) {
         this._getEndpoint = getEndpointFunc;
     };
 
-    // onError(err) -> null
+    // ["err", onError(err)] -> null
     this.setOnError = function (onErrorFunc) {
         this._onError = onErrorFunc;
     };
 
+    // ["info", onLog(info)] -> null
     this.setOnLog = function (onLog) {
         this._onLog = onLog;
     };
