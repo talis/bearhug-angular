@@ -105,9 +105,9 @@ angular.module('talis.bearhug', [])
     var oauthTokenRetryFail = false;
 
     // intercept for oauth tokens
-    $httpProvider.responseInterceptors.push([
-        '$q', '$injector','$location','applicationLoggingService',
-        function ($q, $injector, $location, applicationLoggingService) {
+    $httpProvider.interceptors.push([
+        '$q', '$injector','$location',
+        function ($q, $injector, $location) {
             return function(promise) {
                 return promise.then(function(response) {
                     return response; // no action, was successful
@@ -117,7 +117,6 @@ angular.module('talis.bearhug', [])
                     if (!oauthTokenRetryFail && response && response.status === 401 && response.data &&
                         (response.data.error === "invalid_token" || response.data.error === "expired_token")
                     ) {
-                        applicationLoggingService.debug('responseInterceptor - 401 - expired token?');
                         $injector.get('bearhug').authenticate(
                             function (err) {
                                 if (err) {
@@ -174,7 +173,7 @@ angular.module('talis.bearhug', [])
     /**
      * Routes/codes for which to disable the global error handler that shows the red error page.
      */
-    $httpProvider.responseInterceptors.push([
+    $httpProvider.interceptors.push([
         '$q', '$injector', 'responseService', function ($q, $injector, responseService) {
             return function (promise){
                 return promise.then(function (response){
@@ -203,7 +202,7 @@ angular.module('talis.bearhug', [])
      * the only error i'm not logging is 401 since the interceptor
      * above deals with that specifically
      */
-    $httpProvider.responseInterceptors.push([
+    $httpProvider.interceptors.push([
         '$rootScope', '$q', '$injector', function ($rootScope, $q, $injector){
             return function(promise){
                 return promise.then(function (response){
@@ -312,3 +311,4 @@ angular.module('talis.bearhug', [])
         }
     };
 }]);
+
