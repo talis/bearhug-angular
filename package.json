@@ -4,6 +4,7 @@
   "description": "Response interceptor for elegant bearer-token handling for angular's $http service",
   "main": "src/bearhug.module.js",
   "scripts": {
+    "dist": "grunt uglify",
     "test": "karma start"
   },
   "repository": {
@@ -18,6 +19,8 @@
   "homepage": "https://github.com/talis/bearhug-angular#readme",
   "devDependencies": {
     "bower": "^1.7.9",
+    "grunt": "^1.0.1",
+    "grunt-contrib-uglify": "^1.0.1",
     "jasmine-core": "^2.4.1",
     "karma": "^0.13.22",
     "karma-chrome-launcher": "^0.2.3",
