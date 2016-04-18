@@ -1,0 +1,26 @@
+{
+  "name": "bearhug-angular",
+  "version": "1.0.0",
+  "description": "Response interceptor for elegant bearer-token handling for angular's $http service\"",
+  "main": "src/bearhug.js",
+  "scripts": {
+    "test": "karma start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/talis/bearhug-angular.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/talis/bearhug-angular/issues"
+  },
+  "homepage": "https://github.com/talis/bearhug-angular#readme",
+  "devDependencies": {
+    "bower": "^1.7.9",
+    "jasmine-core": "^2.4.1",
+    "karma": "^0.13.22",
+    "karma-chrome-launcher": "^0.2.3",
+    "karma-jasmine": "^0.3.8"
+  }
+}
