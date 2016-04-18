@@ -1,7 +1,7 @@
 /* global angular */
 angular
   .module('talis.bearhug')
-  .factory('bearhugInterceptor', ['$q', '$injector', 'bearhugStorage', function($q, $injector, bearhugStorage) {
+  .factory('bearhugInterceptor', function($q, $injector, bearhugStorage) {
     // -- public API
     return {
       request: request,
@@ -71,4 +71,4 @@ angular
       var auth = bearhug.options.auth;
       return config.url === auth.endpoint && config.method === auth.httpMethod;
     }
-  }]);
+  });

@@ -1,7 +1,7 @@
 /* global angular */
 angular
   .module('talis.bearhug')
-  .factory('bearhugAuthenticator', ['$http', '$q', 'bearhugStorage', function($http, $q, bearhugStorage) {
+  .factory('bearhugAuthenticator', function($http, $q, bearhugStorage) {
 
     var AUTH_DEFAULTS = {
       endpoint: null,
@@ -62,4 +62,4 @@ angular
       }
     }
 
-  }]);
+  });

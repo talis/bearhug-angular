@@ -34,7 +34,7 @@ angular
       options.auth.endpoint = angular.isString(uri) ? uri : options.auth.endpoint;
     };
 
-    this.$get = ['$injector', 'bearhugAuthenticator', 'bearhugStorage', function($injector, bearhugAuthenticator, bearhugStorage) {
+    this.$get = function($injector, bearhugAuthenticator, bearhugStorage) {
 
       // take a copy of `options` to encapsulate current values
       var opts = angular.copy(options);
@@ -78,5 +78,5 @@ angular
       function authenticate(requestConfig) {
         return bearhugAuthenticator.authenticate(opts.auth, requestConfig);
       }
-    }];
+    };
   });

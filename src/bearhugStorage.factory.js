@@ -1,7 +1,7 @@
 /* global angular */
 angular
   .module('talis.bearhug')
-  .factory('bearhugStorage', ['bearerUtils', function(bearerUtils) {
+  .factory('bearhugStorage', function(bearerUtils) {
     // encapsulated state
     var token = null;
 
@@ -49,4 +49,4 @@ angular
       var tokenFromBearer = bearerUtils.bearer2token(bearer);
       setToken(tokenFromBearer);
     }
-  }]);
+  });
