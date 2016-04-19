@@ -3,28 +3,46 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
+
+    ngAnnotate: {
+      options: {},
+      dist: {
+        files: {
+          'dist/<%= pkg.name %>.js': ['dist/<%= pkg.name %>.js']
+        }
+      }
+    },
+
     uglify: {
-      options: {
-        beautify: true,
-        compress: false,
-        mangle: false,
-        enclose: {}
-      },
-      build: {
+      concat: {          
+        options: {
+          beautify: true,
+          compress: false,
+          mangle: false,
+          enclose: {}
+        },
         src: [
           'src/**.module.js',
           'src/**.js',
           '!src/**.spec.js',
         ],
         dest: 'dist/<%= pkg.name %>.js'
+      },
+      min: {
+        options: {
+          compress: {},
+          mangle: true
+        },
+        src: 'dist/<%= pkg.name %>.js',
+        dest: 'dist/<%= pkg.name %>.min.js'
       }
     }
   });
 
-  // Load the plugin that provides the "uglify" task.
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-ng-annotate');
 
   // Default task(s).
-  grunt.registerTask('default', ['uglify']);
+  grunt.registerTask('default', ['uglify:concat', 'ngAnnotate', 'uglify:min']);
 
 };
