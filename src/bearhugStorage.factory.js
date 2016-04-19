@@ -35,7 +35,7 @@ function bearhugStorage(bearerUtils) {
   * @param newToken Option[string] - a replacement token
   **/
   function setToken(newToken) {
-    token = newToken ? newToken : token;
+    token = angular.isString(newToken) ? newToken : token;
   }
 
   /**
