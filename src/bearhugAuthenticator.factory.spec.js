@@ -1,5 +1,5 @@
 describe('bearhugAuthenticator', function() {
-  var $http, $httpBackend, bearhugAuthenticator, bearhugStorage, bearerUtils;
+  var $http, $httpBackend, bearhugAuthenticator, bearhugStorage;
 
   // Set up the module, especially loading the config that injects Bearhug's HTTP provider
   beforeEach(module('talis.bearhug'));
@@ -10,7 +10,6 @@ describe('bearhugAuthenticator', function() {
     $httpBackend = $injector.get('$httpBackend');
     bearhugAuthenticator = $injector.get('bearhugAuthenticator');
     bearhugStorage = $injector.get('bearhugStorage');
-    bearerUtils = $injector.get('bearerUtils');
   }));
 
   afterEach(function() {
@@ -55,7 +54,7 @@ describe('bearhugAuthenticator', function() {
 
       // user and token should now be stored
       expect(bearhugStorage.getToken()).toBe(FIRST_TOKEN);
-      expect(bearhugStorage.getBearer()).toBe(bearerUtils.token2bearer(FIRST_TOKEN));
+      expect(bearhugStorage.getBearer()).toBeDefined();
     });
 
 
@@ -74,7 +73,7 @@ describe('bearhugAuthenticator', function() {
 
       // user and token should now be stored
       expect(bearhugStorage.getToken()).toBe(FIRST_TOKEN);
-      expect(bearhugStorage.getBearer()).toBe(bearerUtils.token2bearer(FIRST_TOKEN));
+      expect(bearhugStorage.getBearer()).toBeDefined();
     });
 
 
@@ -93,7 +92,7 @@ describe('bearhugAuthenticator', function() {
 
       // user and token should now be stored
       expect(bearhugStorage.getToken()).toBe(FIRST_TOKEN);
-      expect(bearhugStorage.getBearer()).toBe(bearerUtils.token2bearer(FIRST_TOKEN));
+      expect(bearhugStorage.getBearer()).toBeDefined();
     });
   });
 });
