@@ -27,7 +27,7 @@ describe('bearhugAuthenticator', function() {
         endpoint: 'http://example.com/auth',
         httpMethod: null,
         transformResponse: function(resp) {
-          return (resp && resp && resp.oauth && resp.oauth.access_token) || (void 0);
+          return (resp && resp.data && resp.data.oauth && resp.data.oauth.access_token) || (void 0);
         }
       };
 

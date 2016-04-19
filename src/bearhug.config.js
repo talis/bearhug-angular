@@ -1,6 +1,8 @@
 /* global angular */
 angular
   .module('talis.bearhug')
-  .config(function($httpProvider) {
-    $httpProvider.interceptors.push('bearhugInterceptor');
-  });
+  .config(config);
+
+function config($httpProvider) {
+  $httpProvider.interceptors.push('bearhugInterceptor');
+};
