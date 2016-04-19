@@ -2,7 +2,7 @@
   "name": "bearhug-angular",
   "version": "1.0.0",
   "description": "Response interceptor for elegant bearer-token handling for angular's $http service",
-  "main": "src/bearhug.module.js",
+  "main": "dist/bearhug-angular.js",
   "scripts": {
     "dist": "grunt default",
     "test": "karma start"
