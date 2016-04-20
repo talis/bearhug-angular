@@ -50,8 +50,7 @@ function BearhugProvider() {
 
       // expose the stored state from bearhugStorage
       getToken:  bearhugStorage.getToken,
-      getBearer: bearhugStorage.getBearer,
-      getUser:   bearhugStorage.getUser
+      getBearer: bearhugStorage.getBearer
     };
 
     /**
