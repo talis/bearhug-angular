@@ -32,15 +32,13 @@ function BearhugProvider() {
   /**
   * Set the endpoint for authentication.
   *
-  * TODO: should this accept an object specifying URI/method?
-  *
   * @param uri: string - URI for authentication.
   **/
   this.setAuthEndpoint = function(uri) {
     options.auth.endpoint = angular.isString(uri) ? uri : options.auth.endpoint;
   };
 
-  this.$get = function($injector, bearhugAuthenticator, bearhugStorage) {
+  this.$get = function(bearhugAuthenticator, bearhugStorage) {
 
     // take a copy of `options` to encapsulate current values
     var opts = angular.copy(options);
