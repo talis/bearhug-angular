@@ -19,25 +19,22 @@ describe('bearhugAuthenticator', function() {
 
   describe('authenticate', function() {
 
-    var BASE_OPTS, FIRST_TOKEN, FAKE_OAUTH_RESPONSE;
+    // fixture constants
+    var BASE_OPTS = {
+      endpoint: 'http://example.com/auth',
+      httpMethod: null,
+      transformResponse: function(resp) {
+        return (resp && resp.data && resp.data.oauth && resp.data.oauth.access_token) || (void 0);
+      }
+    };
 
-    beforeEach(function() {
-      BASE_OPTS = {
-        endpoint: 'http://example.com/auth',
-        httpMethod: null,
-        transformResponse: function(resp) {
-          return (resp && resp.data && resp.data.oauth && resp.data.oauth.access_token) || (void 0);
-        }
-      };
+    var FIRST_TOKEN = 'first';
 
-      FIRST_TOKEN = 'first';
-
-      FAKE_OAUTH_RESPONSE = { 
-        oauth: { 
-          access_token: FIRST_TOKEN 
-        }
-      };
-    });
+    var FAKE_OAUTH_RESPONSE = { 
+      oauth: { 
+        access_token: FIRST_TOKEN 
+      }
+    };
 
     it('should set stored variables when using a JSONP endpoint', function () {
       var TEST_OPTS = angular.extend({}, BASE_OPTS, { httpMethod: 'JSONP' });
