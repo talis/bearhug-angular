@@ -29,21 +29,6 @@ function BearhugProvider() {
     onLog: console.log
   };
 
-  // [getEndPoint()] -> url
-  this.setCreateEndpointFunc = function (getEndpointFunc) {
-    options.getEndpoint = getEndpointFunc;
-  };
-
-  // ["err", onError(err)] -> null
-  this.setOnError = function (onErrorFunc) {
-    options.onError = onErrorFunc;
-  };
-
-  // ["info", onLog(info)] -> null
-  this.setOnLog = function (onLog) {
-    options.onLog = onLog;
-  };
-
   /**
   * Set the endpoint for authentication.
   *
@@ -66,29 +51,9 @@ function BearhugProvider() {
       authenticate: authenticate,
 
       // expose the stored state from bearhugStorage
-      getToken: bearhugStorage.getToken,
+      getToken:  bearhugStorage.getToken,
       getBearer: bearhugStorage.getBearer,
-      getUser: bearhugStorage.getUser,
-
-      // TODO remove this - it should really just throw an exception that bails the bearhugging
-      getHasRetried: function() {
-        throw new Error('getHasRetried should never be called');
-      },
-
-
-      // TODO remove this? Replace with pubsub or $rootScope event broadcast/emit?
-      log: function (info) {
-        $injector.invoke(opts.onLog, this, {
-          info: info
-        });
-      },
-
-      // TODO remove this? Replace with pubsub or $rootScope event broadcast/emit
-      error: function (err) {
-        $injector.invoke(opts.onError, this, {
-          err: err
-        });
-      }
+      getUser:   bearhugStorage.getUser
     };
 
     /**
