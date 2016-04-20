@@ -113,6 +113,4 @@ describe('bearhugStorage', function() {
       expect(bearhugStorage.getToken()).toBeFalsy();
     });
   });
-
-
 });

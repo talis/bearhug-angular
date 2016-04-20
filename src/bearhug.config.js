@@ -5,4 +5,4 @@ angular
 
 function config($httpProvider) {
   $httpProvider.interceptors.push('bearhugInterceptor');
-};
+}

@@ -37,5 +37,4 @@ function bearerUtils() {
   function token2bearer(token) {
     return angular.isString(token) ? ("Bearer " + token) : (void 0);
   }
-
-};
+}
