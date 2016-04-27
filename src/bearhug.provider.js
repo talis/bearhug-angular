@@ -19,7 +19,7 @@ function BearhugProvider() {
 
   var options = {
     auth: {
-      endpoint: 'http://persona.staging/2/auth/providers/google/login.json?cb=JSON_CALLBACK',
+      endpoint: 'http://persona/2/auth/providers/google/login.json?cb=JSON_CALLBACK',
       httpMethod: 'JSONP',
       transformResponse: function(resp) {
         return (resp && resp.data && resp.data.oauth && resp.data.oauth.access_token) || (void 0);
