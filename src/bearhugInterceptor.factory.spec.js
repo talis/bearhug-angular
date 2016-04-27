@@ -7,6 +7,10 @@ describe('bearhugInterceptor', function() {
   var TOKEN = 'foo';
   var BEARER;
 
+  var AUTH_FUNC = function() {
+    return $http.jsonp(AUTH_ENDPOINT);
+  };
+
   var HEADERS_BEARER_ONLY = function(headers) {
     return headers.Authorization === BEARER;
   };
@@ -25,7 +29,8 @@ describe('bearhugInterceptor', function() {
     angular
       .module('testApp', [])
       .config(function (bearhugProvider) {
-        bearhugProvider.setAuthEndpoint(AUTH_ENDPOINT);
+        bearhugProvider.setAuthenticationFunction(AUTH_FUNC);
+        bearhugProvider.setAuthenticationFunction(AUTH_FUNC);
         testBearhugProvider = bearhugProvider;
       });
 
@@ -243,7 +248,7 @@ describe('bearhugInterceptor', function() {
       $httpBackend.flush();
 
       // verify call flow through authenticate method, even though it failed
-      expect(bearhugAuthenticator.authenticate).toHaveBeenCalledTimes(1);
+      expect(bearhugAuthenticator.authenticate).toHaveBeenCalledTimes(2);
     });
   });
 });

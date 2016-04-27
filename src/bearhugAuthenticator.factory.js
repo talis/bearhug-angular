@@ -24,24 +24,11 @@ function bearhugAuthenticator($http, $q, bearhugStorage) {
   * @returns Promise[string] - the authenticated token
   **/
   function authenticate(options) {
-
     // ensures we have an object, and that properties are chose
     var opts = angular.isObject(options) ? options : {};
 
-    // response2token is a function to transform a response into a token.
-    // defaults to an identity function.
-    var response2token = 
-      angular.isFunction(opts.transformResponse) ? 
-        opts.transformResponse : 
-        function(r) { return r; };
-
-    // $http has method aliases for all of the valid HTTP methods. Use this to validate.
-    var httpMethod = $http[opts.httpMethod && opts.httpMethod.toLowerCase()];
-
-    if(!angular.isString(opts.endpoint)) {
-      return $q.reject(new Error('authenticate.endpoint is not a valid string:', opts.endpoint));
-    } else if(!angular.isFunction(httpMethod)) {
-      return $q.reject(new Error('authenticate.httpMethod is invalid:', opts.httpMethod));
+    if(!angular.isFunction(opts.authenticationFunction)) {
+      throw new Error('No authentication function available to bearhugAuthenticator');
     } else if(authenticationDeferred) {
       // bearhugAuthenticator.authenticate is already waiting on resolution
       return authenticationDeferred.promise;
@@ -51,17 +38,22 @@ function bearhugAuthenticator($http, $q, bearhugStorage) {
 
       // call authentication endpoint
       var authPromise =
-        httpMethod(opts.endpoint)
-          .then(function(response) {
-            // extract and transform response to get at user data wrapping token
-            var tokenFromResponse = response2token(response);
-            // store data and resolve
-            // TODO: tidy this up. Is the response content important?
-            // What is the token used for later? Seems to be discarded...
+        opts.authenticationFunction()
+          .then(function(tokenFromResponse) {
             bearhugStorage.setToken(tokenFromResponse);
-            authenticationDeferred.resolve(bearhugStorage.getToken());
+            var token = bearhugStorage.getToken();
+            if(token) {
+              authenticationDeferred.resolve(token);
+            } else {
+              authenticationDeferred.reject(new Error('Token response is not a string: ' + angular.toJson(tokenFromResponse)));
+            }
           })
           .catch(authenticationDeferred.reject);
+
+      // once promise is fulfilled, clean up the lock
+      authPromise.finally(function() {
+        authenticationDeferred = (void 0);
+      });
 
       return authenticationDeferred.promise;
     }

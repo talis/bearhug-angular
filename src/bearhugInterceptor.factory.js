@@ -4,6 +4,7 @@ angular
   .factory('bearhugInterceptor', bearhugInterceptor);
 
 function bearhugInterceptor($q, $injector, bearhugStorage) {
+
   // -- public API
   return {
     request: request,
@@ -47,9 +48,6 @@ function bearhugInterceptor($q, $injector, bearhugStorage) {
     } else if (rejection.status !== 401) {
       // some non-401 error occurred
       return $q.reject(rejection);
-    } else if (isResponseFromAuthenticationEndpoint(bearhug, rejection.config)) {
-      // Prevent attempts to wrap responsehandling around the auth endpoint
-      return $q.reject(rejection);
     } else {
       return (
         bearhug.authenticate(rejection.config)
@@ -63,16 +61,5 @@ function bearhugInterceptor($q, $injector, bearhugStorage) {
           })
       );
     }
-  }
-
-  /**
-  * Tests whether this HTTP config is made against the bearhug auth endpoint.
-  *
-  * @param bearhug: bearhug - the bearhug instance, from bearhugProvider
-  * @returns boolean - true if endpoint URL/method match bearhug config. 
-  **/
-  function isResponseFromAuthenticationEndpoint(bearhug, config) {
-    var auth = bearhug.options.auth;
-    return config.url === auth.endpoint && config.method === auth.httpMethod;
   }
 }
