@@ -7,7 +7,7 @@ angular
 /**
 * Provides the main authentication flow.
 **/
-function bearhugAuthenticator($http, $q, bearhugStorage) {
+function bearhugAuthenticator($http, $injector, $q, bearhugStorage) {
 
   // ensure only one authentication request happens at a time
   var authenticationDeferred;
@@ -38,7 +38,7 @@ function bearhugAuthenticator($http, $q, bearhugStorage) {
 
       // call authentication endpoint
       var authPromise =
-        opts.authenticationFunction()
+        opts.authenticationFunction($injector)
           .then(function(tokenFromResponse) {
             bearhugStorage.setToken(tokenFromResponse);
             var token = bearhugStorage.getToken();

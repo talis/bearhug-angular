@@ -7,8 +7,8 @@ describe('bearhugInterceptor', function() {
   var TOKEN = 'foo';
   var BEARER;
 
-  var AUTH_FUNC = function() {
-    return $http.jsonp(AUTH_ENDPOINT);
+  var AUTH_FUNC = function(__$injector) {
+    return __$injector.get('$http').jsonp(AUTH_ENDPOINT);
   };
 
   var HEADERS_BEARER_ONLY = function(headers) {
@@ -29,7 +29,6 @@ describe('bearhugInterceptor', function() {
     angular
       .module('testApp', [])
       .config(function (bearhugProvider) {
-        bearhugProvider.setAuthenticationFunction(AUTH_FUNC);
         bearhugProvider.setAuthenticationFunction(AUTH_FUNC);
         testBearhugProvider = bearhugProvider;
       });
