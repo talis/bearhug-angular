@@ -87,7 +87,7 @@ describe('bearhugInterceptor', function() {
 
     it('should add stored token as an Authorization header in PATCH requests', function () {
       $httpBackend.expect('PATCH', URI, ALWAYS_TRUE, HEADERS_BEARER_ONLY).respond(200, '');
-      $http.patch(URI, {});
+      $http({ url: URI, method: 'PATCH'});
       $httpBackend.flush();
     });
 
@@ -145,7 +145,7 @@ describe('bearhugInterceptor', function() {
       expect(bearhug.getToken()).toBeNull();
 
       // authenticate should succeed
-      spyOn(bearhugAuthenticator, 'authenticate').and.returnValue($q.resolve('foo'));
+      spyOn(bearhugAuthenticator, 'authenticate').and.returnValue($q.when('foo'));
 
       // endpoint will be called twice: once failing auth, once succeeding
       $httpBackend.expectGET(URI, ALWAYS_TRUE, HEADERS_NO_BEARER).respond(401, 'fubar');
