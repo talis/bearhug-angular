@@ -19,7 +19,9 @@ module.exports = function(grunt) {
           beautify: true,
           compress: false,
           mangle: false,
-          enclose: {}
+          enclose: {
+            angular: 'angular' 
+          }
         },
         src: [
           'src/**.module.js',

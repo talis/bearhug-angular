@@ -1,6 +1,11 @@
-(function() {
+(function(angular) {
+    config.$inject = ["$httpProvider"];
+    bearhugAuthenticator.$inject = ["$http", "$injector", "$q", "bearhugStorage"];
+    bearhugInterceptor.$inject = ["$q", "$injector", "bearhugStorage"];
+    bearhugStorage.$inject = ["bearerUtils"];
     angular.module("talis.bearhug", []);
-    angular.module("talis.bearhug").factory("bearerUtils", function() {
+    angular.module("talis.bearhug").factory("bearerUtils", bearerUtils);
+    function bearerUtils() {
         var BEARER_REGEX = /^Bearer (.*)$/;
         return {
             bearer2token: bearer2token,
@@ -13,93 +18,68 @@
         function token2bearer(token) {
             return angular.isString(token) ? "Bearer " + token : void 0;
         }
-    });
-    angular.module("talis.bearhug").config(["$httpProvider", function($httpProvider) {
+    }
+    angular.module("talis.bearhug").config(config);
+    function config($httpProvider) {
         $httpProvider.interceptors.push("bearhugInterceptor");
-    }]);
-    angular.module("talis.bearhug").provider("bearhug", function BearhugProvider() {
+    }
+    angular.module("talis.bearhug").provider("bearhug", BearhugProvider);
+    function BearhugProvider() {
         var options = {
-            auth: {
-                endpoint: "http://persona.staging/2/auth/providers/google/login.json?cb=JSON_CALLBACK",
-                httpMethod: "JSONP",
-                transformResponse: function(resp) {
-                    return resp && resp.data && resp.data.oauth && resp.data.oauth.access_token || void 0;
-                }
-            },
-            onError: console.error,
-            onLog: console.log
+            authenticationFunction: null
         };
-        this.setCreateEndpointFunc = function(getEndpointFunc) {
-            options.getEndpoint = getEndpointFunc;
+        this.setAuthenticationFunction = function(authFunc) {
+            options.authenticationFunction = angular.isFunction(authFunc) ? authFunc : options.authenticationFunction;
         };
-        this.setOnError = function(onErrorFunc) {
-            options.onError = onErrorFunc;
-        };
-        this.setOnLog = function(onLog) {
-            options.onLog = onLog;
-        };
-        this.setAuthEndpoint = function(uri) {
-            options.auth.endpoint = angular.isString(uri) ? uri : options.auth.endpoint;
-        };
-        this.$get = ["$injector", "bearhugAuthenticator", "bearhugStorage", function($injector, bearhugAuthenticator, bearhugStorage) {
+        this.$get = ["bearhugAuthenticator", "bearhugStorage", function(bearhugAuthenticator, bearhugStorage) {
             var opts = angular.copy(options);
-            return {
-                options: opts,
-                authenticate: authenticate,
-                getToken: bearhugStorage.getToken,
-                getBearer: bearhugStorage.getBearer,
-                getUser: bearhugStorage.getUser,
-                getHasRetried: function() {
-                    throw new Error("getHasRetried should never be called");
-                },
-                log: function(info) {
-                    $injector.invoke(opts.onLog, this, {
-                        info: info
-                    });
-                },
-                error: function(err) {
-                    $injector.invoke(opts.onError, this, {
-                        err: err
-                    });
-                }
-            };
+            if (!angular.isFunction(opts.authenticationFunction)) {
+                throw new Error("No authentication function specified. How can bearhug authenticate?");
+            } else {
+                return {
+                    options: opts,
+                    authenticate: authenticate,
+                    getToken: bearhugStorage.getToken,
+                    getBearer: bearhugStorage.getBearer
+                };
+            }
             function authenticate(requestConfig) {
-                return bearhugAuthenticator.authenticate(opts.auth, requestConfig);
+                return bearhugAuthenticator.authenticate(opts, requestConfig);
             }
         }];
-    });
-    angular.module("talis.bearhug").factory("bearhugAuthenticator", ["$http", "$q", "bearhugStorage", function($http, $q, bearhugStorage) {
-        var AUTH_DEFAULTS = {
-            endpoint: null,
-            httpMethod: null,
-            transformResponse: null
-        };
+    }
+    angular.module("talis.bearhug").factory("bearhugAuthenticator", bearhugAuthenticator);
+    function bearhugAuthenticator($http, $injector, $q, bearhugStorage) {
         var authenticationDeferred;
         return {
             authenticate: authenticate
         };
         function authenticate(options) {
-            var opts = angular.extend({}, AUTH_DEFAULTS, options);
-            var httpMethod = $http[opts.httpMethod && opts.httpMethod.toLowerCase()];
-            if (!angular.isString(opts.endpoint)) {
-                return $q.reject(new Error("authenticate.endpoint is not a valid string:", opts.endpoint));
-            } else if (!angular.isFunction(httpMethod)) {
-                return $q.reject(new Error("authenticate.httpMethod is invalid:", opts.httpMethod));
+            var opts = angular.isObject(options) ? options : {};
+            if (!angular.isFunction(opts.authenticationFunction)) {
+                throw new Error("No authentication function available to bearhugAuthenticator");
             } else if (authenticationDeferred) {
                 return authenticationDeferred.promise;
             } else {
                 authenticationDeferred = $q.defer();
-                var authPromise = httpMethod(opts.endpoint).then(function(response) {
-                    var responseData = response && response.data;
-                    var tokenFromResponse = angular.isFunction(opts.transformResponse) ? opts.transformResponse(responseData) : responseData;
+                var authPromise = opts.authenticationFunction($injector).then(function(tokenFromResponse) {
                     bearhugStorage.setToken(tokenFromResponse);
-                    authenticationDeferred.resolve(bearhugStorage.getToken());
+                    var token = bearhugStorage.getToken();
+                    if (token) {
+                        authenticationDeferred.resolve(token);
+                    } else {
+                        authenticationDeferred.reject(new Error("Token response is not a string: " + angular.toJson(tokenFromResponse)));
+                    }
                 }).catch(authenticationDeferred.reject);
+                authPromise.finally(function() {
+                    authenticationDeferred = void 0;
+                });
                 return authenticationDeferred.promise;
             }
         }
-    }]);
-    angular.module("talis.bearhug").factory("bearhugInterceptor", ["$q", "$injector", "bearhugStorage", function($q, $injector, bearhugStorage) {
+    }
+    angular.module("talis.bearhug").factory("bearhugInterceptor", bearhugInterceptor);
+    function bearhugInterceptor($q, $injector, bearhugStorage) {
         return {
             request: request,
             response: response,
@@ -126,8 +106,6 @@
                 return $q.reject(rejection);
             } else if (rejection.status !== 401) {
                 return $q.reject(rejection);
-            } else if (isResponseFromAuthenticationEndpoint(bearhug, rejection.config)) {
-                return $q.reject(rejection);
             } else {
                 return bearhug.authenticate(rejection.config).then(function() {
                     return $http(rejection.config);
@@ -136,12 +114,9 @@
                 });
             }
         }
-        function isResponseFromAuthenticationEndpoint(bearhug, config) {
-            var auth = bearhug.options.auth;
-            return config.url === auth.endpoint && config.method === auth.httpMethod;
-        }
-    }]);
-    angular.module("talis.bearhug").factory("bearhugStorage", ["bearerUtils", function(bearerUtils) {
+    }
+    angular.module("talis.bearhug").factory("bearhugStorage", bearhugStorage);
+    function bearhugStorage(bearerUtils) {
         var token = null;
         return {
             getToken: getToken,
@@ -153,7 +128,7 @@
             return token || null;
         }
         function setToken(newToken) {
-            token = newToken ? newToken : token;
+            token = angular.isString(newToken) ? newToken : token;
         }
         function getBearer() {
             return bearerUtils.token2bearer(getToken()) || null;
@@ -162,5 +137,55 @@
             var tokenFromBearer = bearerUtils.bearer2token(bearer);
             setToken(tokenFromBearer);
         }
-    }]);
-})();
+    }
+    angular.module("talis.bearhug").factory("interceptorFilter", interceptorFilter);
+    function interceptorFilter() {
+        return {
+            wrapInterceptor: wrapInterceptor,
+            InterceptorFilter: InterceptorFilter
+        };
+        function InterceptorFilter(filterSpec) {
+            return {
+                apply: function(interceptor) {
+                    return wrapInterceptor(interceptor, filterSpec);
+                }
+            };
+        }
+        function wrapInterceptor(interceptor, filterSpec) {
+            var filteredInterceptor = {};
+            var filters = buildFilterSpecObj(filterSpec);
+            for (var key in interceptor || {}) {
+                if (angular.isFunction(interceptor[key]) && angular.isFunction(filters[key])) {
+                    filteredInterceptor[key] = proxiedInterceptFunc(interceptor[key], filters[key]);
+                } else if (angular.isFunction(interceptor[key])) {
+                    filteredInterceptor[key] = interceptor[key];
+                }
+            }
+            return filteredInterceptor;
+        }
+        function buildFilterSpecObj(filterSpec) {
+            if (angular.isFunction(filterSpec)) {
+                return {
+                    request: filterSpec,
+                    requestError: filterSpec,
+                    response: filterSpec,
+                    responseError: filterSpec
+                };
+            } else if (angular.isObject(filterSpec)) {
+                return filterSpec;
+            } else {
+                return {};
+            }
+        }
+        function proxiedInterceptFunc(interceptorFunc, filterFunc) {
+            return function() {
+                var args = arguments.length >= 1 ? Array.prototype.slice.call(arguments, 0) : [];
+                if (filterFunc.apply(null, args)) {
+                    return interceptorFunc.apply(null, args);
+                } else {
+                    return void 0;
+                }
+            };
+        }
+    }
+})(angular);
