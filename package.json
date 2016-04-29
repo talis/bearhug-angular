@@ -5,7 +5,8 @@
   "main": "dist/bearhug-angular.js",
   "scripts": {
     "dist": "grunt default",
-    "test": "karma start"
+    "test:watch": "karma start",
+    "test": "karma start --single-run=true --auto-watch=false"
   },
   "repository": {
     "type": "git",
