@@ -1,5 +1,8 @@
 describe('bearhugAuthenticator', function() {
-  var $http, $httpBackend, bearhugAuthenticator, bearhugStorage;
+  var $http;
+  var $httpBackend;
+  var bearhugAuthenticator;
+  var bearhugStorage;
 
   // Set up the module, especially loading the config that injects Bearhug's HTTP provider
   beforeEach(module('talis.bearhug'));

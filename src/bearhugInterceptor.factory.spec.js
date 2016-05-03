@@ -1,5 +1,11 @@
 describe('bearhugInterceptor', function() {
-  var $http, $httpBackend, $q, bearhug, bearhugAuthenticator, bearhugStorage, bearerUtils;
+  var $http;
+  var $httpBackend;
+  var $q;
+  var bearhug;
+  var bearhugAuthenticator;
+  var bearhugStorage;
+  var bearerUtils;
 
     // create and save a token
   var AUTH_ENDPOINT = '/auth/me';
@@ -173,7 +179,7 @@ describe('bearhugInterceptor', function() {
       expect(bearhug.getToken()).toBeNull();
 
       // force authenticate to fail
-      spyOn(bearhugAuthenticator, 'authenticate').and.returnValue($q.reject('foo'));
+      spyOn(bearhugAuthenticator, 'authenticate').and.returnValue($q.reject({ status: 401, data: 'foo' }));
 
       // endpoint will be called twice: once failing auth, once succeeding
       $httpBackend.expectGET(URI, ALWAYS_TRUE, HEADERS_NO_BEARER).respond(401, 'fubar');
@@ -195,34 +201,7 @@ describe('bearhugInterceptor', function() {
     });
 
 
-    it('should fail if authentication fails', function () {
-      // token starts unset
-      expect(bearhug.getToken()).toBeNull();
-
-      // force authenticate to fail
-      spyOn(bearhugAuthenticator, 'authenticate').and.returnValue($q.reject('foo'));
-
-      // endpoint will be called once, failing auth
-      $httpBackend.expectGET(URI, ALWAYS_TRUE, HEADERS_NO_BEARER).respond(401, 'fubar');
-
-      // call endpoint again, this time expecting a failure
-      $http
-        .get(URI)
-        .then(function(response) {
-          fail('this should never be reached');
-        })
-        .catch(function(rejection) {
-          expect(rejection.status).toBe(401);
-          expect(rejection.data).toBe('fubar');
-        });
-      $httpBackend.flush();
-
-      // verify call flow through authenticate method, even though it failed
-      expect(bearhugAuthenticator.authenticate).toHaveBeenCalledTimes(1);
-    });
-
-
-    it('should not recurse on 401 against authentication endpoint', function () {
+    it('should not recurse on 401 against authentication endpoint through self-401', function () {
       // token starts unset
       expect(bearhug.getToken()).toBeNull();
 
@@ -247,7 +226,35 @@ describe('bearhugInterceptor', function() {
       $httpBackend.flush();
 
       // verify call flow through authenticate method, even though it failed
-      expect(bearhugAuthenticator.authenticate).toHaveBeenCalledTimes(2);
+      expect(bearhugAuthenticator.authenticate).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not recurse on 401 when auth succeeds, but endpoint still fails', function () {
+      // token starts unset
+      expect(bearhug.getToken()).toBeNull();
+
+      // authenticate should succeed
+      spyOn(bearhugAuthenticator, 'authenticate').and.returnValue($q.when('foo'));
+
+      // endpoint will be called twice: once failing auth, once succeeding
+      $httpBackend.expectGET(URI, ALWAYS_TRUE, HEADERS_NO_BEARER).respond(401, 'fubar');
+      $httpBackend.expectGET(URI, ALWAYS_TRUE, HEADERS_BEARER_ONLY).respond(401, 'still fubar');
+
+
+      // call endpoint again, this time expecting a failure
+      $http
+        .get(URI)
+        .then(function(response) {
+          fail('this should never be reached');
+        })
+        .catch(function(rejection) {
+          expect(rejection.status).toBe(401);
+          expect(rejection.data).toBe('still fubar');
+        });
+      $httpBackend.flush();
+
+      // verify call flow through authenticate method, even though it failed
+      expect(bearhugAuthenticator.authenticate).toHaveBeenCalledTimes(1);
     });
   });
 });

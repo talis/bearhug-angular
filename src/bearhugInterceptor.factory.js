@@ -5,6 +5,8 @@ angular
 
 function bearhugInterceptor($q, $injector, bearhugStorage) {
 
+  var authenticationDeferred;
+
   // -- public API
   return {
     request: request,
@@ -42,24 +44,37 @@ function bearhugInterceptor($q, $injector, bearhugStorage) {
     var bearhug = $injector.get('bearhug');
   
     // Bearhug only handles 401 authorization failures; all others fast-fail.
-    if (!rejection || !rejection.status || !rejection.config) {
-      // something unpredictable happened
+    if (!rejection || !rejection.config || rejection.status !== 401) {
+      // a non-401 error occurred
       return $q.reject(rejection);
-    } else if (rejection.status !== 401) {
-      // some non-401 error occurred
+    } else if(authenticationDeferred) {
+      // 401, but from outstanding request (i.e. on request-retry)
       return $q.reject(rejection);
     } else {
-      return (
+      // 401, which we will retry
+      authenticationDeferred = $q.defer();
+
+      var authPromise = 
         bearhug.authenticate(rejection.config)
           .then(function() {
             // if reauthentication succeeds, retry original request
-            return $http(rejection.config);
+            return (
+              $http(rejection.config)
+                .then(authenticationDeferred.resolve)
+                .catch(authenticationDeferred.reject)
+            );
           })
-          .catch(function(err) {
-            // any authentication failure simply rejects as original
-            return $q.reject(rejection);
-          })
-      );
+          .catch(function() {
+            // if reauthentication fails, reject original request
+            authenticationDeferred.reject(rejection);
+          });
+
+      // tidy up after original request completes
+      authPromise.finally(function() {
+        authenticationDeferred = (void 0);
+      });
+
+      return authenticationDeferred.promise;
     }
   }
 }

@@ -1,10 +1,12 @@
 describe('interceptorFilter', function() {
+  var $q;
   var interceptorFilter;
 
   // Set up the module, especially loading the config that injects Bearhug's HTTP provider
   beforeEach(module('talis.bearhug'));
 
   beforeEach(inject(function($injector) {
+    $q = $injector.get('$q');
     interceptorFilter = $injector.get('interceptorFilter');
   }));
 
@@ -140,29 +142,41 @@ describe('interceptorFilter', function() {
       it('request should not be called', function () {
         spyOn(DEFAULT_INTERCEPTOR, 'request');
         var wrappedInterceptor = interceptorFilter.wrapInterceptor(DEFAULT_INTERCEPTOR, FALSY_FILTER_SPEC);
-        wrappedInterceptor.request({ foo: 1 });
+        var requestConfig = wrappedInterceptor.request({ foo: 1 });
         expect(DEFAULT_INTERCEPTOR.request).not.toHaveBeenCalled();
+        expect(requestConfig).toEqual({ foo: 1 });
       });
 
       it('requestError should not be called', function () {
         spyOn(DEFAULT_INTERCEPTOR, 'requestError');
         var wrappedInterceptor = interceptorFilter.wrapInterceptor(DEFAULT_INTERCEPTOR, FALSY_FILTER_SPEC);
-        wrappedInterceptor.requestError({ foo: 1 });
+        var requestRejection = wrappedInterceptor.requestError({ foo: 1 });
         expect(DEFAULT_INTERCEPTOR.requestError).not.toHaveBeenCalled();
+        requestRejection
+          .then(fail)
+          .catch(function(rejection) {
+            expect(rejection).toEqual({ foo: 1 });
+          });
       });
 
       it('response should not be called', function () {
         spyOn(DEFAULT_INTERCEPTOR, 'response');
         var wrappedInterceptor = interceptorFilter.wrapInterceptor(DEFAULT_INTERCEPTOR, FALSY_FILTER_SPEC);
-        wrappedInterceptor.response({ foo: 1 });
+        var response = wrappedInterceptor.response({ foo: 1 });
         expect(DEFAULT_INTERCEPTOR.response).not.toHaveBeenCalled();
+        expect(response).toEqual({ foo: 1 });
       });
 
       it('responseError should not be called', function () {
         spyOn(DEFAULT_INTERCEPTOR, 'responseError');
         var wrappedInterceptor = interceptorFilter.wrapInterceptor(DEFAULT_INTERCEPTOR, FALSY_FILTER_SPEC);
-        wrappedInterceptor.responseError({ foo: 1 });
+        var responseRejection = wrappedInterceptor.responseError({ foo: 1 });
         expect(DEFAULT_INTERCEPTOR.responseError).not.toHaveBeenCalled();
+        responseRejection
+          .then(fail)
+          .catch(function(rejection) {
+            expect(rejection).toEqual({ foo: 1 });
+          });
       });
     });
 
