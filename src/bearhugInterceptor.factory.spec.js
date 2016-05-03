@@ -34,9 +34,11 @@ describe('bearhugInterceptor', function() {
     var testBearhugProvider;
     angular
       .module('testApp', [])
-      .config(function (bearhugProvider) {
+      .config(function ($httpProvider, bearhugProvider) {
         bearhugProvider.setAuthenticationFunction(AUTH_FUNC);
         testBearhugProvider = bearhugProvider;
+
+        $httpProvider.interceptors.push('bearhugInterceptor');
       });
 
     module('talis.bearhug', 'testApp');
