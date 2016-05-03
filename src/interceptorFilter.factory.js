@@ -3,7 +3,14 @@ angular
   .module('talis.bearhug')
   .factory('interceptorFilter', interceptorFilter);
 
-function interceptorFilter() {
+function interceptorFilter($q) {
+
+  var DEFAULTS = {
+    request:       function(requestConfig) { return requestConfig; },
+    requestError:  function(rejection) { return $q.reject(rejection); },
+    response:       function(response) { return response; },
+    responseError:  function(rejection) { return $q.reject(rejection); }
+  };
 
   return {
     wrapInterceptor: wrapInterceptor,
@@ -25,7 +32,7 @@ function interceptorFilter() {
     for (var key in (interceptor || {})) {
       if(angular.isFunction(interceptor[key]) && angular.isFunction(filters[key])) {
         // when there's a filter function available, proxy the interceptor and filter
-        filteredInterceptor[key] = proxiedInterceptFunc(interceptor[key], filters[key]);
+        filteredInterceptor[key] = proxiedInterceptFunc(interceptor[key], filters[key], DEFAULTS[key]);
       } else if(angular.isFunction(interceptor[key])) {
         // when no filter function is available, always apply the interceptor
         filteredInterceptor[key] = interceptor[key];
@@ -50,14 +57,14 @@ function interceptorFilter() {
     }
   }
 
-  function proxiedInterceptFunc(interceptorFunc, filterFunc) {
+  function proxiedInterceptFunc(interceptorFunc, filterFunc, defaultFunc) {
     return function () {
       var args = (arguments.length >= 1) ? Array.prototype.slice.call(arguments, 0) : [];
 
       if(filterFunc.apply(null, args)) {
         return interceptorFunc.apply(null, args);
       } else {
-        return (void 0);
+        return defaultFunc.apply(null, args);
       }
     };
   }
