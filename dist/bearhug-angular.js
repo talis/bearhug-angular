@@ -3,6 +3,7 @@
     bearhugAuthenticator.$inject = ["$http", "$injector", "$q", "bearhugStorage"];
     bearhugInterceptor.$inject = ["$q", "$injector", "bearhugStorage"];
     bearhugStorage.$inject = ["bearerUtils"];
+    interceptorFilter.$inject = ["$q"];
     angular.module("talis.bearhug", []);
     angular.module("talis.bearhug").factory("bearerUtils", bearerUtils);
     function bearerUtils() {
@@ -139,7 +140,21 @@
         }
     }
     angular.module("talis.bearhug").factory("interceptorFilter", interceptorFilter);
-    function interceptorFilter() {
+    function interceptorFilter($q) {
+        var DEFAULTS = {
+            request: function(requestConfig) {
+                return requestConfig;
+            },
+            requestError: function(rejection) {
+                return $q.reject(rejection);
+            },
+            response: function(response) {
+                return response;
+            },
+            responseError: function(rejection) {
+                return $q.reject(rejection);
+            }
+        };
         return {
             wrapInterceptor: wrapInterceptor,
             InterceptorFilter: InterceptorFilter
@@ -156,7 +171,7 @@
             var filters = buildFilterSpecObj(filterSpec);
             for (var key in interceptor || {}) {
                 if (angular.isFunction(interceptor[key]) && angular.isFunction(filters[key])) {
-                    filteredInterceptor[key] = proxiedInterceptFunc(interceptor[key], filters[key]);
+                    filteredInterceptor[key] = proxiedInterceptFunc(interceptor[key], filters[key], DEFAULTS[key]);
                 } else if (angular.isFunction(interceptor[key])) {
                     filteredInterceptor[key] = interceptor[key];
                 }
@@ -177,13 +192,13 @@
                 return {};
             }
         }
-        function proxiedInterceptFunc(interceptorFunc, filterFunc) {
+        function proxiedInterceptFunc(interceptorFunc, filterFunc, defaultFunc) {
             return function() {
                 var args = arguments.length >= 1 ? Array.prototype.slice.call(arguments, 0) : [];
                 if (filterFunc.apply(null, args)) {
                     return interceptorFunc.apply(null, args);
                 } else {
-                    return void 0;
+                    return defaultFunc.apply(null, args);
                 }
             };
         }
