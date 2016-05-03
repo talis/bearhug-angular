@@ -1,5 +1,4 @@
 (function(angular) {
-    config.$inject = ["$httpProvider"];
     bearhugAuthenticator.$inject = ["$http", "$injector", "$q", "bearhugStorage"];
     bearhugInterceptor.$inject = ["$q", "$injector", "bearhugStorage"];
     bearhugStorage.$inject = ["bearerUtils"];
@@ -19,10 +18,6 @@
         function token2bearer(token) {
             return angular.isString(token) ? "Bearer " + token : void 0;
         }
-    }
-    angular.module("talis.bearhug").config(config);
-    function config($httpProvider) {
-        $httpProvider.interceptors.push("bearhugInterceptor");
     }
     angular.module("talis.bearhug").provider("bearhug", BearhugProvider);
     function BearhugProvider() {
@@ -81,6 +76,7 @@
     }
     angular.module("talis.bearhug").factory("bearhugInterceptor", bearhugInterceptor);
     function bearhugInterceptor($q, $injector, bearhugStorage) {
+        var authenticationDeferred;
         return {
             request: request,
             response: response,
@@ -103,16 +99,21 @@
         function responseError(rejection) {
             var $http = $injector.get("$http");
             var bearhug = $injector.get("bearhug");
-            if (!rejection || !rejection.status || !rejection.config) {
+            if (!rejection || !rejection.config || rejection.status !== 401) {
                 return $q.reject(rejection);
-            } else if (rejection.status !== 401) {
+            } else if (authenticationDeferred) {
                 return $q.reject(rejection);
             } else {
-                return bearhug.authenticate(rejection.config).then(function() {
-                    return $http(rejection.config);
-                }).catch(function(err) {
-                    return $q.reject(rejection);
+                authenticationDeferred = $q.defer();
+                var authPromise = bearhug.authenticate(rejection.config).then(function() {
+                    return $http(rejection.config).then(authenticationDeferred.resolve).catch(authenticationDeferred.reject);
+                }).catch(function() {
+                    authenticationDeferred.reject(rejection);
                 });
+                authPromise.finally(function() {
+                    authenticationDeferred = void 0;
+                });
+                return authenticationDeferred.promise;
             }
         }
     }
