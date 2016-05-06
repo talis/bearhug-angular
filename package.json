@@ -6,7 +6,7 @@
   "scripts": {
     "dist": "grunt default",
     "test:watch": "karma start",
-    "test": "karma start --single-run=true --auto-watch=false"
+    "test": "karma start --single-run=true --auto-watch=false --browsers PhantomJS"
   },
   "repository": {
     "type": "git",
