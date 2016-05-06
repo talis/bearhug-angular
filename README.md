@@ -1,4 +1,4 @@
-# bearhug-angular [![Build Status](https://travis-ci.org/talis/bearhug-angular.svg?branch=travis)](https://travis-ci.org/talis/bearhug-angular)
+# bearhug-angular [![Build Status](https://travis-ci.org/talis/bearhug-angular.svg)](https://travis-ci.org/talis/bearhug-angular)
 
 Elegant bearer-token handling for AngularJS's `$http` service.
 
