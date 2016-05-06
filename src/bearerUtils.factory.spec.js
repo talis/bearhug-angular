@@ -19,6 +19,12 @@ describe('bearerUtils', function() {
       expect(bearerUtils.bearer2token('Bearer bar')).toEqual('bar');
     });
 
+    it('should return undefined for bearer tokens with illegal characters', function () {
+      expect(bearerUtils.bearer2token('Bearer THIS IS NOT LEGAL')).toBeUndefined();
+      expect(bearerUtils.bearer2token('Bearer THIS+IS/NOT[LEGAL]')).toBeUndefined();
+    });
+
+
     it('should return undefined for invalid bearers', function () {
       expect(bearerUtils.bearer2token(void 0)).toBeUndefined();
       expect(bearerUtils.bearer2token('Notabearer')).toBeUndefined();

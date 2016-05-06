@@ -6,7 +6,7 @@
     angular.module("talis.bearhug", []);
     angular.module("talis.bearhug").factory("bearerUtils", bearerUtils);
     function bearerUtils() {
-        var BEARER_REGEX = /^Bearer (.*)$/;
+        var BEARER_REGEX = /^Bearer ([a-zA-Z0-9\._\-]+)$/;
         return {
             bearer2token: bearer2token,
             token2bearer: token2bearer

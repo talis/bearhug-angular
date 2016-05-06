@@ -9,7 +9,7 @@ angular
 function bearerUtils() {
   
   // private constants
-  var BEARER_REGEX = /^Bearer (.*)$/;
+  var BEARER_REGEX = /^Bearer ([a-zA-Z0-9\._\-]+)$/;
   
   // -- public API
   return {
