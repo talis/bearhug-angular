@@ -144,9 +144,9 @@ This can be achieved using promises, and customised by the application by specif
 
 ### Exclusions
 
-You may not need or want to use bearer authorization on all requests, so Bearhug provides a mechanism for customising when it is a pplied.
+You may not need or want to use bearer authorization on all requests, so Bearhug provides a mechanism for customising when its interceptor is applied.
 
-The `interceptorFilter` is a generic mechanism for selectively applying an interceptor on different routes. To use it, you effectively wrap up an existing interceptor with a wrapper that determines when the underlying interceptor is applied.
+The `interceptorFilter` is a generic mechanism for selectively applying an interceptor on different routes. To use it, you effectively wrap up an existing interceptor with a wrapper that determines when the underlying interceptor is applied. This requires two components: a filter specification, and a wrapper interceptor.
 
 
 #### Filter specifications 
