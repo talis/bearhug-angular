@@ -113,4 +113,24 @@ describe('bearhugStorage', function() {
       expect(bearhugStorage.getToken()).toBeFalsy();
     });
   });
+
+
+  describe('clear', function() {
+
+    it('should have no effect when token is undefined', function () {
+      expect(bearhugStorage.getToken()).toBeFalsy();
+      bearhugStorage.clear();
+      expect(bearhugStorage.getToken()).toBeFalsy();
+    });
+
+    it('should replace any existing token', function () {
+      bearhugStorage.setBearer('Bearer foo');
+      expect(bearhugStorage.getBearer()).toBe('Bearer foo');
+      expect(bearhugStorage.getToken()).toBe('foo');
+      // clear
+      bearhugStorage.clear();
+      expect(bearhugStorage.getBearer()).toBeFalsy();
+      expect(bearhugStorage.getToken()).toBeFalsy();
+    });
+  });
 });
