@@ -14,7 +14,7 @@ function bearhugStorage(bearerUtils) {
 
   // -- public API
   return {
-    clear: clear,
+    clearToken: clearToken,
     getToken: getToken,
     setToken: setToken,
     getBearer: getBearer,
@@ -24,7 +24,7 @@ function bearhugStorage(bearerUtils) {
   /**
   * Clears the current token from storage.
   **/
-  function clear() {
+  function clearToken() {
     token = null;
     return;
   }

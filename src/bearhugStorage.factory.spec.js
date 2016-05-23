@@ -115,11 +115,11 @@ describe('bearhugStorage', function() {
   });
 
 
-  describe('clear', function() {
+  describe('clearToken', function() {
 
     it('should have no effect when token is undefined', function () {
       expect(bearhugStorage.getToken()).toBeFalsy();
-      bearhugStorage.clear();
+      bearhugStorage.clearToken();
       expect(bearhugStorage.getToken()).toBeFalsy();
     });
 
@@ -127,8 +127,8 @@ describe('bearhugStorage', function() {
       bearhugStorage.setBearer('Bearer foo');
       expect(bearhugStorage.getBearer()).toBe('Bearer foo');
       expect(bearhugStorage.getToken()).toBe('foo');
-      // clear
-      bearhugStorage.clear();
+      // clearToken
+      bearhugStorage.clearToken();
       expect(bearhugStorage.getBearer()).toBeFalsy();
       expect(bearhugStorage.getToken()).toBeFalsy();
     });

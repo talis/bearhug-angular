@@ -44,6 +44,8 @@ function BearhugProvider() {
         authenticate: authenticate,
 
         // expose the stored state from bearhugStorage
+        clearToken:  bearhugStorage.clearToken,
+        setToken:  bearhugStorage.setToken,
         getToken:  bearhugStorage.getToken,
         getBearer: bearhugStorage.getBearer
       };
