@@ -35,6 +35,8 @@
                 return {
                     options: opts,
                     authenticate: authenticate,
+                    clearToken: bearhugStorage.clearToken,
+                    setToken: bearhugStorage.setToken,
                     getToken: bearhugStorage.getToken,
                     getBearer: bearhugStorage.getBearer
                 };
@@ -121,11 +123,16 @@
     function bearhugStorage(bearerUtils) {
         var token = null;
         return {
+            clearToken: clearToken,
             getToken: getToken,
             setToken: setToken,
             getBearer: getBearer,
             setBearer: setBearer
         };
+        function clearToken() {
+            token = null;
+            return;
+        }
         function getToken() {
             return token || null;
         }
